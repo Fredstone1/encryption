@@ -1,8 +1,10 @@
 import numpy as np
 import random
 import math
+from fractions import gcd
 import csv
 import time
+
 
 def sfd(prime1,prime2):
     while prime2 != 0:
@@ -16,50 +18,77 @@ def phiCalc(prime1,prime2):
     phi = abs((prime1-1)*(prime2-1))/sfd(prime1-1,prime2-1)
     return phi;
 
+def findPrime():
+
+
 
 def relativPrime(phi):
     fundetPrime = False
     while fundetPrime == False:
-        e = random.randint(1,phi)
+        e = random.randint(100000000000000,1000000000000000000000)
         if sfd(phi,e) == 1:
             fundetPrime = True
             return e;
 
-def EUA(a, b):
+def EUA(phi, e):
     r, s, t = [], [], []
-    r.append(a), s.append(1), t.append(0)
-    r.append(b), s.append(0), t.append(1)
-    for k in range(2, 6):
+    r.append(phi), s.append(1), t.append(0)
+    r.append(e), s.append(0), t.append(1)
+    k = 2
+    while r[-1] != 0:
         q = math.floor(r[k - 2] / r[k - 1])
         r.append(r[k - 2] - q * r[k - 1] ), s.append(s[k - 2] - q * s[k - 1] ), t.append(t[k - 2] - q * t[k - 1])
-    return r, s, t;
+        k += 1
+    d = t[-1]+t[-2]
+    return d;
 
-# TODO
-# vi burde fixe for loop sådan det kører det korrekte antal gange
-# vi skal "løse" for resterne som i eksempel 6.4 for at få inverse modulære satan
+def check(phi, e, d):
+    checking = False
+    while checking == False:
+        if d < 0 :
+            e = relativPrime(phi)
+            d = EUA(phi, e)
+        else:
+            checking = True
+
+    return d, e;
+
+def encrypt(n, e, plaintext):
+    cipherText = plaintext**e % n
+    return cipherText
+
+def decrypt(n, d, ciphertext):
+    #potens = cipherText**d
+    #plainText = potens % n
+
+#------------------------------------------------------------#
+# Fundet algoritme på nettet, snak med Jacob og brugen af det.
+
+    if n == 1:
+        return 0;
+    result = 1
+    base = ciphertext % n
+    while d > 0:
+        if d % 2 == 1:
+            result = (result * base) % n
+        d = d >> 1
+        base = (base * base) % n
+    return result
+#------------------------------------------------------------#
 
 
 
-# -------------------------------------------------------------------------------------------------------------#
-# Det her virker men er ret langsomt...
-def nyrelativP(phi):
-    start_time = time.time()
-    relativePrimes = []
-    for i in range(2, phi):
-        if sfd(phi, i) == 1:
-            relativePrimes.append(i)
-    print("--- %s seconds ---" % (time.time() - start_time))
-    return relativePrimes
+p = 671998030559713968361666935769
+q = 282174488599599500573849980909
+n = p*q
+phi = phiCalc(p,q)
+e = relativPrime(phi)
+d = EUA(phi, e)
+print("1")
+#d, e = check(phi, e, d)
+#print("1")
+print(d,e)
 
+print(encrypt(n, e, 2551252151251))
 
-def d(a, b):  # det er denne funktion der er sygt langsom ....
-    #resultD = b**(sum(nyrelativP(a)))%a  #<- dette er det samme som for loopet men ikke lige så optimeret
-    e = sum(nyrelativP(a))
-    resultD = 1
-    for e in range(0, e):
-        resultD = (b * resultD) % a
-    return resultD;
-# -------------------------------------------------------------------------------------------------------------#
-
-# print(EUA(384,18))
-print(EUA(264,17))
+print(decrypt(n, d, encrypt(n, e, 2551252151251)))
