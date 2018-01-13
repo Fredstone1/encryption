@@ -1,6 +1,8 @@
 import numpy as np
 import random
+from sympy import nextprime
 import math
+import pyprimes
 from fractions import gcd
 import csv
 import time
@@ -18,17 +20,20 @@ def phiCalc(prime1,prime2):
     phi = abs((prime1-1)*(prime2-1))/sfd(prime1-1,prime2-1)
     return phi;
 
-def findPrime():
+#def findPrime():
 
 
 
 def relativPrime(phi):
-    fundetPrime = False
-    while fundetPrime == False:
-        e = random.randint(100000000000000,1000000000000000000000)
-        if sfd(phi,e) == 1:
-            fundetPrime = True
-            return e;
+    #fundetPrime = False
+    #while fundetPrime == False:
+    #    e = random.randint(1,phi)
+    #    if sfd(phi,e) == 1:
+    #        fundetPrime = True
+    #        return e;
+    #e = pyprimes.primes_above(phi/2)
+    e = 1
+    return e
 
 def EUA(phi, e):
     r, s, t = [], [], []
@@ -54,8 +59,20 @@ def check(phi, e, d):
     return d, e;
 
 def encrypt(n, e, plaintext):
-    cipherText = plaintext**e % n
-    return cipherText
+    #cipherText = plaintext**e % n
+    #return cipherText
+    if n == 1:
+        return 0;
+    result = 1
+    base = plaintext % n
+    while e > 0:
+        if e % 2 == 1:
+            result = (result * base) % n
+        e = e >> 1
+        base = (base * base) % n
+    return result
+
+
 
 def decrypt(n, d, ciphertext):
     #potens = cipherText**d
@@ -78,17 +95,26 @@ def decrypt(n, d, ciphertext):
 
 
 
-p = 671998030559713968361666935769
-q = 282174488599599500573849980909
-n = p*q
-phi = phiCalc(p,q)
-e = relativPrime(phi)
+p = 1272833
+q = 1271971
+n = int(p*q)
+
+#------------------------------------------------------------#
+# Du skal ikke slette det, det er nice og nemt at holde styr på
+print('n = ', n, ' nLength = ', len(str(int(n))))
+phi = int(phiCalc(p,q))
+print('phi = ', phi, ' phiLength = ', len(str(int(phi))), ' phiHalfed = ', phi/2)
+e = nextprime(phi/2+1)
+print('e = ',e)
+#e = relativPrime(phi)
 d = EUA(phi, e)
-print("1")
-#d, e = check(phi, e, d)
-#print("1")
-print(d,e)
 
-print(encrypt(n, e, 2551252151251))
 
-print(decrypt(n, d, encrypt(n, e, 2551252151251)))
+d, e = check(phi, e, d)
+print('d = ', d, 'e = ',e)
+
+print('encryption = ', encrypt(n, e, 17))
+ciphertext = encrypt(n, e, 17)
+
+print('decryption = ', decrypt(n, d, ciphertext))
+#------------------------------------------------------------#
