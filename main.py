@@ -1,5 +1,7 @@
 from math import floor
 import random
+import sympy
+
 
 def txt2ascii(txt):
     converted = [ord(i) for i in txt]
@@ -23,7 +25,7 @@ def phiCalc(prime1, prime2):
 def relativPrime(phi):
     fundetPrime = False
     while fundetPrime == False:
-       e = random.randint((phi/2)+1,phi)
+       e = random.randint(int(phi//2)+1,phi)
        if sfd(phi,e) == 1:
            fundetPrime = True
     return e;
@@ -34,7 +36,7 @@ def EUA(phi, e):
     r.append(e), s.append(0), t.append(1)
     k = 2
     while r[-1] != 0:
-        q = floor(r[k - 2] / r[k - 1])
+        q = floor(r[k - 2] // r[k - 1])
         r.append(r[k - 2] - q * r[k - 1]), s.append(s[k - 2] - q * s[k - 1]), t.append(t[k - 2] - q * t[k - 1])
         k += 1
     d = t[-1] + t[-2]
@@ -62,21 +64,86 @@ def decrypt(n, d, ciphertext):
         plaintext.append(pow(i, d, n))
     return plaintext;
 
-# ------------------------------------------------------------#
-p = 2367495770217142995264827948666809233066409497699870112003149352380375124855230068487109373226251983
-q = 1814159566819970307982681716822107016038920170504391457462563485198126916735167260215619523429714031
-plaintext = txt2ascii("hemmelig besked 123")
-# ------------------------------------------------------------#
-n = int(p * q)
-phi = int(phiCalc(p, q))
-e = relativPrime(phi)
-d = EUA(phi,e)
-d, e = check(phi, e, d)
-enc = encrypt(n,e,plaintext)
-dec = decrypt(n,d,enc)
-dec = ascii2txt(dec)
-print(dec)
-# ------------------------------------------------------------#
+def Baillie_PSW():
+    # laver først trial division med de første x antal primes
+    primes = []
+    txt = "er sandsynligvis primtal"
+    txt2 = "er ikke primtal"
+    N = pow(2,random.randint(100,500))-1
+    fp = divide()
+    for i in fp:
+        if N % i == 0:
+            txt = txt2
+    t = 0
+    d = N-1
+    while True:
+        q, r = divmod(d,2)
+        if r == 1:
+            break
+        t += 1
+        d = q
+    assert(pow(2,t)*d == N-1)
+
+    if pow(2,d,N) != 1:
+        txt = txt2
+    for i in range(1,t):
+        if pow(2,pow(2,i)*d,N) != N-1:
+            txt = txt2
+
+    if txt != txt2:
+        txt = str(N) + " " + txt
+
+        return N
+
+def divide():
+    fp = []
+    for i in sympy.primerange(1,10000): # finder alle primtal mellem 1 og 1000 således vi kan tjekke om  N er prim
+        fp.append(i)
+    return fp
+
+def primeGen():
+    exp = random.randint(1000,1000000)
+    prime = exp_by_squaring_iterative(2,exp)-1
+
+
+# ----------------------------------------------------------------------------------------------------------------#
+#p = 28911710017320205966167820725313234361535259163045867986277478145081076845846493521348693253530011243988160148063424837895971948244167867236923919506962312185829914482993478947657472351461336729641485069323635424692930278888923450060546465883490944265147851036817433970984747733020522259537
+#q = 16471581891701794764704009719057349996270239948993452268812975037240586099924712715366967486587417803753916334331355573776945238871512026832810626226164346328807407669366029926221415383560814338828449642265377822759768011406757061063524768140567867350208554439342320410551341675119078050953
+#plaintext = txt2ascii("Hej Magnus, hvis du læser dette, så synes jeg vi skal smutte. -Rander")
+# ----------------------------------------------------------------------------------------------------------------#
+#n = int(p * q)
+#print(len(str(n)))
+#print(n.bit_length())
+#phi = int(phiCalc(p, q))
+#e = relativPrime(phi)
+#print(e)
+#d = EUA(phi,e) #d er vores private key
+#d, e = check(phi, e, d) # e er public key
+#enc = encrypt(n,e,plaintext)
+#dec = decrypt(n,d,enc)
+#dec = ascii2txt(dec)
+
+#print
+primes = []
+for i in range(1,50):
+    primes.append(Baillie_PSW())
+
+primes = [i for i in primes if i is not None]
+print(primes)
+pt, qt = 1636695303948070935006594848413799576108321023021532394741645684048066898202337277441635046162952078575443342063780035504608628272942696526664263794687, 696898287454081973172991196020261297061887
+testtxt = txt2ascii("dette er en test 123")
+ntest = int(pt * qt)
+phitest = int(phiCalc(pt, qt))
+etest = relativPrime(phitest)
+dtest = EUA(phitest, etest)
+dtest, etest = check(phitest, etest, dtest)
+enctest = encrypt(ntest, etest, testtxt)
+dectest = decrypt(ntest, dtest, enctest)
+print(ascii2txt(dectest))
+
+# ----------------------------------------------------------------------------------------------------------------#
 
 #TODO
-# primtal eller billedkodning
+# primtal generation
+# 1. generate uneven number ex 2^n -1
+#
