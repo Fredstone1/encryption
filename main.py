@@ -67,33 +67,62 @@ def decrypt(n, d, ciphertext):
 def Baillie_PSW():
     # laver først trial division med de første x antal primes
     primes = []
-    txt = "er sandsynligvis primtal"
-    txt2 = "er ikke primtal"
-    N = pow(2,random.randint(100,500))-1
-    fp = divide()
-    for i in fp:
-        if N % i == 0:
+    while len(primes) < 2:
+        txt = "er sandsynligvis primtal"
+        txt2 = "er ikke primtal"
+
+        N = pow(2,random.randint(5,50))-1
+        fp = divide()
+        for i in fp:
+            if N % i == 0:
+                txt = txt2
+        t = 0
+        d = N-1
+        while True:
+            q, r = divmod(d,2)
+            if r == 1:
+                break
+            t += 1
+            d = q
+        assert(pow(2,t)*d == N-1)
+
+        if pow(2,d,N) != 1:
             txt = txt2
-    t = 0
-    d = N-1
-    while True:
-        q, r = divmod(d,2)
-        if r == 1:
-            break
-        t += 1
-        d = q
-    assert(pow(2,t)*d == N-1)
+        for i in range(1,t):
+            if pow(2,pow(2,i)*d,N) != N-1:
+                txt = txt2
 
-    if pow(2,d,N) != 1:
-        txt = txt2
-    for i in range(1,t):
-        if pow(2,pow(2,i)*d,N) != N-1:
-            txt = txt2
+        if txt != txt2:
+            txt = str(N) + " " + txt
+            primes.append(N)
 
-    if txt != txt2:
-        txt = str(N) + " " + txt
+    if primes[0] == primes[1]:
+        print("hi")
+        primes = []
+        Baillie_PSW()
+    # Sortere listen:
 
-        return N
+    if primes[0] < primes[1]:
+        temp = primes[0]
+        primes[0] = primes[1]
+        primes[1] = temp
+
+    return primes[0], primes[1]
+
+def RSAcheck(prime1, prime2):
+    plaintext = [17]
+    n = prime1 * prime2
+    phi = (prime1, prime2)
+    e = relativPrime(phi)
+    d = EUA(phi, e)
+    d, e = check(phi, e, d)
+    enc = encrypt(n, e, plaintext)
+    dec = decrypt(n,d,enc)
+    if dec == plaintext:
+        return True
+    else:
+        Baillie_PSW()
+
 
 def divide():
     fp = []
@@ -122,28 +151,22 @@ def primeGen():
 #enc = encrypt(n,e,plaintext)
 #dec = decrypt(n,d,enc)
 #dec = ascii2txt(dec)
-
-#print
-primes = []
-for i in range(1,50):
-    primes.append(Baillie_PSW())
-
-primes = [i for i in primes if i is not None]
-print(primes)
-pt, qt = 1636695303948070935006594848413799576108321023021532394741645684048066898202337277441635046162952078575443342063780035504608628272942696526664263794687, 696898287454081973172991196020261297061887
-testtxt = txt2ascii("dette er en test 123")
-ntest = int(pt * qt)
-phitest = int(phiCalc(pt, qt))
-etest = relativPrime(phitest)
-dtest = EUA(phitest, etest)
-dtest, etest = check(phitest, etest, dtest)
-enctest = encrypt(ntest, etest, testtxt)
-dectest = decrypt(ntest, dtest, enctest)
-print(ascii2txt(dectest))
-
 # ----------------------------------------------------------------------------------------------------------------#
 
 #TODO
+p, q = Baillie_PSW()
+print('p = ',p)
+print('q = ', q)
+plaintext = [17]
+n = int(p * q)
+phi = int(phiCalc(p, q))
+e = relativPrime(phi)
+d = EUA(phi,e) #d er vores private key
+d, e = check(phi, e, d) # e er public key
+enc = encrypt(n,e,plaintext)
+dec = decrypt(n,d,enc)
+print(dec)
+
 # primtal generation
 # 1. generate uneven number ex 2^n -1
 #
